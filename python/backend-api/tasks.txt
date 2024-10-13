@@ -1,0 +1,1 @@
+["cleaning", "do washing", "cook"]
