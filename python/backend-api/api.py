@@ -4,11 +4,7 @@ from flask import Flask
 app = Flask(__name__)
 
 with open("./tasks.txt", 'r') as file:
-    try:
-        tasks_array = json.load(file)
-    except json.JSONDecodeError:
-        print("Error: Invalid JSON format in tasks.txt")
-        tasks_array = []
+    tasks_array = json.load(file)
 
 
 @app.route("/read/<index>")
