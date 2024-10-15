@@ -1,5 +1,5 @@
 import json
-from flask import Flask
+from flask import Flask, request
 
 app = Flask(__name__)
 
@@ -10,8 +10,6 @@ def write_to_file(data_to_write):
     with open("./tasks.txt", 'w') as file:
         json.dump(data_to_write, file)
 
-tasks_array.append("breakdance")
-write_to_file(tasks_array)
 
 @app.route("/read/<index>")
 def return_tasks(index):
@@ -24,7 +22,11 @@ def return_tasks(index):
     except ValueError:
         return "Invalid index", 400
 
-#@app.route("/write/<index>", methods=["POST"])
-#def write_tasks(index):
+@app.route("/write", methods=["POST"])
+def write_tasks():
+    new_task = request.json.get('task')
+    tasks_array.append(new_task)
+    write_to_file(tasks_array)
+    return {"message": "Task added", "new_task": new_task}, 201
 
 app.run(host="0.0.0.0", port=5001)
