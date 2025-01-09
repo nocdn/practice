@@ -19,7 +19,7 @@ def union(objectA, objectB):
         x1, y1, z1, r1 = s1
         # check if s1 is contained within any other sphere
         contained = any(
-            math.dist((x1, y1, z1), (x2, y2, z2)) + r1 <= r2
+            math.dist((x1, y1, z1), (x2, y2, z2)) + r1 < r2
             for j, (x2, y2, z2, r2) in enumerate(combined) if i != j
         )
         # if not contained, add to result
