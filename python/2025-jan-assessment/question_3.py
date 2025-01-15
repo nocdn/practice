@@ -94,7 +94,6 @@ def total_cost(ingredients_needed):
     
     for ing, amount in ingredients_needed.items():
         pack_cost, pack_size = ingredients[ing]
-        # calculates num packs needed (round up)
         packs = (amount + pack_size - 1) // pack_size
         cost = packs * pack_cost
         total += cost
@@ -102,6 +101,22 @@ def total_cost(ingredients_needed):
         
     return (total, packs_cost)
 
+def shopping_list(ing_file, recipe_file, orders):
+    """
+    # generates a formatted shopping list
+    # imports data, calculates ingredients needed, determines cost and packs
+    """
+    import_files(ing_file, recipe_file) # no error handling, let exceptions from import_files propagate
+    ingredients_needed = total_ingredients(orders) # no error handling here either
+    total, packs_cost = total_cost(ingredients_needed)
+    
+    # format output
+    output = "Ingredient    Qty     Cost\n"
+    for ing, (qty, cost) in packs_cost.items():
+        output += f"{ing:<12}{qty:^4}    £{(cost / 100):>4.2f}\n"
+    output += f"Total Cost: £{(total / 100):>4.2f}\n"
+    
+    return output
 
 # example usage
 try:
@@ -115,13 +130,20 @@ try:
     orders3 = [48, 'chocolate', 'blueberry']
     orders4 = ['chocolate', 6]
 
-    print(total_ingredients(['chocolate', 6]))  # Output for valid orders
+    # print(total_ingredients(['chocolate', 6]))  # Output for valid orders
     # print(total_ingredients(orders2))  # Raises ValueError
     # print(total_ingredients(orders3))  # Raises TypeError
+    # ing = {'flour': 250, 'eggs': 2, 'sugar': 120, 'milk': 200, 'yogurt': 280, 'cocoa': 50}
+    # print(total_cost(ing))
+
+    ing_file = 'Ingredients.csv'
+    recipe_file = 'Recipes.csv'
+    orders = ['chocolate', 96]
+    print(shopping_list(ing_file, recipe_file, orders))
 
 except FileNotFoundError as e:
     print(e)
 except ValueError as e:
     print(e)
 except TypeError as e:
-    print(e)# example usage
+    print(e)
