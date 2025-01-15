@@ -51,17 +51,13 @@ class GameTile:
         self._coordinates = coords
     
     def __str__(self):
-        # format coordinates
         if self._coordinates:
             x, y = self._coordinates
             coords_string = f"[{x},{y}]"
         else:
             coords_string = "none"
         
-        # format features
         features_string = ','.join(self._features)
-        
-        # combine all parts
         result = f"<{features_string},{coords_string},{self._orientation}>"
         return result
     
@@ -69,7 +65,6 @@ class GameTile:
         # a value of True means rotate clockwise by one position, False means rotate anti-clockwise by one position
         if boolean:
             self._orientation = (self._orientation + 1) % 4
-            # the module operator is used here to make sure the orientation is always between 0 and 3
         else:
             self._orientation = (self._orientation - 1) % 4
 
@@ -118,7 +113,6 @@ class GameBoard:
     def __init__(self, start_tile):
         self._board = []
         self._available_spaces = []
-        # place the initial tile at [0,0]
         start_tile.coordinates = [0, 0]
         self._board.append(start_tile)
         self._update_spaces(start_tile)
@@ -129,7 +123,7 @@ class GameBoard:
         if [x, y] in self._available_spaces:
             self._available_spaces.remove([x, y])
         # add adjacent coords if they are free
-        for nx, ny in [(x+1,y), (x-1,y), (x,y+1), (x,y-1)]:
+        for nx, ny in [(x, y+1), (x+1, y), (x, y-1), (x-1, y)]:
             if not any(t.coordinates == [nx, ny] for t in self._board):
                 if [nx, ny] not in self._available_spaces:
                     self._available_spaces.append([nx, ny])
@@ -148,13 +142,11 @@ class GameBoard:
         return valid_moves
 
     def _is_valid_placement(self, tile, coords, orientation):
-        # temporarily set tile coords and orientation
         original_coords = tile.coordinates
         original_orientation = tile.orientation
         tile.coordinates = coords
         tile._orientation = orientation
         
-        # check all adjacent tiles
         for board_tile in self._board:
             bx, by = board_tile.coordinates
             if [bx, by] in [(coords[0]+1, coords[1]),
@@ -162,12 +154,10 @@ class GameBoard:
                             (coords[0], coords[1]+1),
                             (coords[0], coords[1]-1)]:
                 if not self._features_match(tile, board_tile):
-                    # revert changes, return False
                     tile.coordinates = original_coords
                     tile._orientation = original_orientation
                     return False
         
-        # revert changes, return True
         tile.coordinates = original_coords
         tile._orientation = original_orientation
         return True
@@ -175,33 +165,26 @@ class GameBoard:
     def _features_match(self, new_tile, board_tile):
         nx, ny = new_tile.coordinates
         bx, by = board_tile.coordinates
-        # side indices: 0=north,1=east,2=south,3=west
         new_rot = new_tile.rotated_features()
         board_rot = board_tile.rotated_features()
 
         if bx == nx + 1 and by == ny:
-            # board_tile is to the east -> compare new_tile east vs board_tile west
             return new_rot[1] == board_rot[3]
         if bx == nx - 1 and by == ny:
-            # board_tile is to the west -> compare new_tile west vs board_tile east
             return new_rot[3] == board_rot[1]
         if bx == nx and by == ny + 1:
-            # board_tile is to the north -> compare new_tile north vs board_tile south
             return new_rot[0] == board_rot[2]
         if bx == nx and by == ny - 1:
-            # board_tile is to the south -> compare new_tile south vs board_tile north
             return new_rot[2] == board_rot[0]
 
-        return True  # not adjacent, so no conflict
+        return True
 
     def place(self, tile, coords, orientation):
-        # check if coords is in available_spaces and pass adjacency test
         if coords not in self._available_spaces:
             raise ValueError("Coordinates not available.")
         if not self._is_valid_placement(tile, coords, orientation):
             raise ValueError("Invalid placement.")
         
-        # now place tile
         tile.coordinates = coords
         tile._orientation = orientation
         self._board.append(tile)

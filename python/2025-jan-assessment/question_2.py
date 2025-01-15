@@ -44,6 +44,10 @@ def find_restaurants(country, stars):
             formatted_restaurants.append(format_details([restaurant] + details)) # add restaurant name to details
 
    if len(formatted_restaurants) == 0:
-        return f"There are no {stars} star restaurants in {country}.\n"
+        stars_string = stars * "*"
+        return f"""There are no {stars_string} star restaurants in {country}.
+        """
    else:
         return formatted_restaurants
+   
+print(find_restaurants('Italy', 1))
