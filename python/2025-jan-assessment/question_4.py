@@ -16,6 +16,8 @@
 # R - Road
 # F - Field
 
+import random
+
 class GameTile:
     def __init__(self, features):
         if len(features) != 4:
@@ -76,7 +78,6 @@ class GameTile:
         rotation_amount = -self._orientation  # Negative because we rotate right
         return self._features[rotation_amount:] + self._features[:rotation_amount]
 
-import random
 
 class BagOfTiles:
     def __init__(self):
