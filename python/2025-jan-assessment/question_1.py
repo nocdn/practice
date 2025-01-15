@@ -1,4 +1,4 @@
-def check_sequence(words):
+def check_sequance(words):
     """
     checks a sequence of words to ensure they form a valid word ladder.
 
