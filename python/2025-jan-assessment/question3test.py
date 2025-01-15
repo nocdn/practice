@@ -102,26 +102,8 @@ def total_cost(ingredients_needed):
         
     return (total, packs_cost)
 
+# First import the files
+import_files('Ingredients.csv', 'Recipes.csv')
 
-# example usage
-try:
-    import_files('Ingredients.csv', 'Recipes.csv')
-    data = export_data()
-    # print("ingredients:", data[0])
-    # print("recipes:", data[1])
+print(total_ingredients(['chocolate', 6])) 
 
-    orders1 = ['chocolate', 48, 'blueberry', 12]
-    orders2 = ['oat', 16, 'chocolate', 11, 'lemon', 0]
-    orders3 = [48, 'chocolate', 'blueberry']
-    orders4 = ['chocolate', 6]
-
-    print(total_ingredients(['chocolate', 6]))  # Output for valid orders
-    # print(total_ingredients(orders2))  # Raises ValueError
-    # print(total_ingredients(orders3))  # Raises TypeError
-
-except FileNotFoundError as e:
-    print(e)
-except ValueError as e:
-    print(e)
-except TypeError as e:
-    print(e)# example usage
