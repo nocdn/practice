@@ -206,22 +206,3 @@ class GameBoard:
         self._board.append(tile)
         self._update_spaces(tile)
 
-# features_1 = ['C', 'C', 'R', 'R']
-# tile_1 = GameTile(features_1)
-# print(tile_1)
-
-# examples for the rotations
-# tile_1 = GameTile(['C', 'C', 'R', 'R'])
-# print(tile_1)
-# tile_1.rotate(True)
-# tile_1.rotate(True)
-# print(tile_1)
-# tile_1.rotate(False)
-# print(tile_1)
-
-# examples for the rotated_features method
-# tile_1 = GameTile(['C', 'C', 'R', 'R'])
-# print(tile_1)
-# tile_1.rotate(True)
-# print(tile_1)
-# print(tile_1.rotated_features())
