@@ -45,8 +45,7 @@ def find_restaurants(country, stars):
 
    if len(formatted_restaurants) == 0:
         stars_string = stars * "*"
-        return f"""There are no {stars_string} star restaurants in {country}.
-        """
+        return f"There are no {stars_string} star restaurants in {country}.\n"
    else:
         return formatted_restaurants
    

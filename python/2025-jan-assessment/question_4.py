@@ -43,34 +43,28 @@ class GameTile:
         has_two_values = len(coords) == 2
         if not has_two_values:
             raise ValueError("Coordinates must have two values.")
-        
         all_integers = all(isinstance(c, int) for c in coords)
         if not all_integers:
             raise TypeError("Coordinates must be integers.")
-        
         self._coordinates = coords
-    
+
     def __str__(self):
         if self._coordinates:
             x, y = self._coordinates
             coords_string = f"[{x},{y}]"
         else:
             coords_string = "none"
-        
         features_string = ','.join(self._features)
-        result = f"<{features_string},{coords_string},{self._orientation}>"
-        return result
-    
+        return f"<{features_string},{coords_string},{self._orientation}>"
+
     def rotate(self, boolean):
-        # a value of True means rotate clockwise by one position, False means rotate anti-clockwise by one position
         if boolean:
             self._orientation = (self._orientation + 1) % 4
         else:
             self._orientation = (self._orientation - 1) % 4
 
     def rotated_features(self):
-        # Return features rotated based on current orientation
-        rotation_amount = -self._orientation  # Negative because we rotate right
+        rotation_amount = -self._orientation
         return self._features[rotation_amount:] + self._features[:rotation_amount]
 
 
@@ -83,17 +77,12 @@ class BagOfTiles:
         return self._bag
 
     def generate(self):
-        # 6 tiles with same feature on all sides (2 each of [C,C,C,C], [R,R,R,R], [F,F,F,F])
         for features in (['C','C','C','C'], ['R','R','R','R'], ['F','F','F','F']):
             for _ in range(2):
                 self._bag.append(GameTile(features))
-
-        # 6 tiles with same feature on opposite sides (2 each of [C,R,C,R], [C,F,C,F], [R,F,R,F])
         for features in (['C','R','C','R'], ['C','F','C','F'], ['R','F','R','F']):
             for _ in range(2):
                 self._bag.append(GameTile(features))
-
-        # 6 tiles with same feature on adjacent sides (2 each of [C,C,R,R], [C,C,F,F], [R,R,F,F])
         for features in (['C','C','R','R'], ['C','C','F','F'], ['R','R','F','F']):
             for _ in range(2):
                 self._bag.append(GameTile(features))
@@ -108,7 +97,8 @@ class BagOfTiles:
 
     def isEmpty(self):
         return len(self._bag) == 0
-    
+
+
 class GameBoard:
     def __init__(self, start_tile):
         self._board = []
@@ -119,74 +109,110 @@ class GameBoard:
 
     def _update_spaces(self, placed_tile):
         x, y = placed_tile.coordinates
-        # remove the space from available_spaces (if present)
         if [x, y] in self._available_spaces:
             self._available_spaces.remove([x, y])
-        # add adjacent coords if they are free
         for nx, ny in [(x, y+1), (x+1, y), (x, y-1), (x-1, y)]:
             if not any(t.coordinates == [nx, ny] for t in self._board):
                 if [nx, ny] not in self._available_spaces:
                     self._available_spaces.append([nx, ny])
-
-    def possible_moves(self, tile):
-        valid_moves = []
-        for space in self._available_spaces:
-            x, y = space
-            orientations = []
-            # check all orientations 0..3
-            for orientation in range(4):
-                if self._is_valid_placement(tile, [x, y], orientation):
-                    orientations.append(orientation)
-            if orientations:
-                valid_moves.append([x, y] + orientations)
-        return valid_moves
-
-    def _is_valid_placement(self, tile, coords, orientation):
-        original_coords = tile.coordinates
-        original_orientation = tile.orientation
-        tile.coordinates = coords
-        tile._orientation = orientation
-        
-        for board_tile in self._board:
-            bx, by = board_tile.coordinates
-            if [bx, by] in [(coords[0]+1, coords[1]),
-                            (coords[0]-1, coords[1]),
-                            (coords[0], coords[1]+1),
-                            (coords[0], coords[1]-1)]:
-                if not self._features_match(tile, board_tile):
-                    tile.coordinates = original_coords
-                    tile._orientation = original_orientation
-                    return False
-        
-        tile.coordinates = original_coords
-        tile._orientation = original_orientation
-        return True
 
     def _features_match(self, new_tile, board_tile):
         nx, ny = new_tile.coordinates
         bx, by = board_tile.coordinates
         new_rot = new_tile.rotated_features()
         board_rot = board_tile.rotated_features()
-
-        if bx == nx + 1 and by == ny:
+        
+        # Check east-west connections
+        if bx == nx + 1 and by == ny:  # board tile is to the right
             return new_rot[1] == board_rot[3]
-        if bx == nx - 1 and by == ny:
+        if bx == nx - 1 and by == ny:  # board tile is to the left
             return new_rot[3] == board_rot[1]
-        if bx == nx and by == ny + 1:
+            
+        # Check north-south connections
+        if by == ny + 1 and bx == nx:  # board tile is above
             return new_rot[0] == board_rot[2]
-        if bx == nx and by == ny - 1:
+        if by == ny - 1 and bx == nx:  # board tile is below
             return new_rot[2] == board_rot[0]
+            
+        return True  # No adjacent edge
 
+    def _restore_state(self, tile, old_coords, old_orientation):
+        # Restore orientation first
+        tile._orientation = old_orientation
+        # If old_coords had 2 values, restore via the property setter.
+        # Otherwise, restore directly so we don't trigger a ValueError.
+        if len(old_coords) == 2:
+            tile.coordinates = old_coords
+        else:
+            tile._coordinates = old_coords
+
+    def _is_valid_placement(self, tile, coords, orientation):
+        original_coords = tile.coordinates
+        original_orientation = tile.orientation
+        tile.coordinates = coords
+        tile._orientation = orientation
+        for board_tile in self._board:
+            bx, by = board_tile.coordinates
+            if [bx, by] in [
+                [coords[0]+1, coords[1]],
+                [coords[0]-1, coords[1]],
+                [coords[0], coords[1]+1],
+                [coords[0], coords[1]-1]
+            ]:
+                if not self._features_match(tile, board_tile):
+                    self._restore_state(tile, original_coords, original_orientation)
+                    return False
+
+        self._restore_state(tile, original_coords, original_orientation)
         return True
 
+    def possible_moves(self, tile):
+        moves_dict = {}  # Group orientations by coordinate
+        original_coords = tile.coordinates
+        original_orientation = tile.orientation
+        
+        for space in self._available_spaces:
+            valid_orientations = []
+            for orientation in range(4):
+                if self._is_valid_placement(tile, space, orientation):
+                    valid_orientations.append(orientation)
+            if valid_orientations:
+                moves_dict[tuple(space)] = valid_orientations
+        
+        # Restore original state
+        if len(original_coords) == 2:
+            tile.coordinates = original_coords
+        else:
+            tile._coordinates = []
+        tile._orientation = original_orientation
+        
+        # Format moves as required: [[x,y,orientation1,orientation2,...],...]
+        valid_moves = []
+        for coord, orientations in moves_dict.items():
+            move = [coord[0], coord[1]] + orientations
+            valid_moves.append(move)
+        
+        return valid_moves
+
     def place(self, tile, coords, orientation):
+        if not isinstance(coords, list) or len(coords) != 2:
+            raise ValueError("Coordinates must be a list of two values.")
         if coords not in self._available_spaces:
             raise ValueError("Coordinates not available.")
         if not self._is_valid_placement(tile, coords, orientation):
             raise ValueError("Invalid placement.")
         
-        tile.coordinates = coords
-        tile._orientation = orientation
-        self._board.append(tile)
-        self._update_spaces(tile)
+        # Save original state in case of failure
+        original_coords = tile.coordinates
+        original_orientation = tile.orientation
+        
+        try:
+            tile.coordinates = coords
+            tile._orientation = orientation
+            self._board.append(tile)
+            self._update_spaces(tile)
+        except Exception as e:
+            # Restore original state if anything fails
+            self._restore_state(tile, original_coords, original_orientation)
+            raise e
 
