@@ -1,56 +1,50 @@
-def check_sequance(words):
+def check_sequance(sequence):
     """
-    checks a sequence of words to ensure they form a valid word ladder.
+    this function takes a list of words and highlights which letter was changed
 
     args:
-        words: a list of words.
-
+        sequence: a list of strings representing the sequence of words
     returns:
-        array: a list of strings representing the validated word ladder, 
-        or a list indicating the first invalid word.
-
-    raises:
-        ValueError: if the list has less than three words or if the words 
-                    are not all the same length.
+        array: a list of strings representing the sequence of words with the changed letter highlighted
     """
-
-    # check if list has at least three words
-    if len(words) < 3:
-        raise ValueError("list must contain at least three words.")
-
-    # check if all words are of the same length
-    word_length = len(words[0])
-    if not all(len(word) == word_length for word in words):
-        raise ValueError("all words must have the same length.")
-
-    result = [words[0]]  # initialize result with the first word
-    for i in range(len(words) - 1):
-        difference_count = 0  # count of differing characters
-        diff_indices = []  # indices of differing characters
-        for j in range(word_length):
-            if words[i][j] != words[i+1][j]:
-                difference_count += 1
-                diff_indices.append(j)
-
-        # if words are identical, mark as invalid and return
-        if words[i] == words[i+1]:
-            result.append(f"*{words[i+1]}*")
-            if i + 2 < len(words):  # check if there are more words after the invalid one
-                result.extend(words[i+2:])
-            return result
-        
-        # if words differ by one character, mark that character
-        elif difference_count == 1:
-            new_word = list(words[i+1])
-            new_word.insert(diff_indices[0], "*")
-            new_word.insert(diff_indices[0] + 2, "*")
-            result.append("".join(new_word))
-
-        # if words differ by more than one character, mark as invalid and return
-        elif difference_count > 1:
-             result.append(f"*{words[i+1]}*")
-             if i + 2 < len(words):
-                result.extend(words[i+2:])
-             return result
-
-    return result  # return the validated word ladder
+    # check number of words in sequence
+    if len(sequence) < 3:
+        raise ValueError("The sequence must have at least 3 words")
+    else:
+        same_length = True
+        word_length = len(sequence[0])
+        # will check if any word is not same length as the first word, because they have to be equal length
+        for word in sequence:
+            if len(word) != word_length:
+                same_length = False
+        if not same_length:
+            raise ValueError("All words in the sequence must be the same length")
+    
+    is_valid_sequence = True
+    # will be the output if the sequence is valid
+    new_list = [sequence[0]]
+    for i in range(len(sequence)-1):
+        letters_original = list(sequence[i])
+        letters_new = list(sequence[i+1])
+        # check if any two words repeated
+        if letters_original == letters_new:
+            sequence[i+1] = "*" + sequence[i+1] + "*"
+            is_valid_sequence = False
+            break
+        letter_changed = -1
+        # checks letters in words to see if they are same or not
+        for x in range(word_length):
+            if letters_original[x] != letters_new[x]:
+                if letter_changed != -1:
+                    sequence[i+1] = "*" + sequence[i+1] + "*"
+                    is_valid_sequence = False
+                else:
+                    letter_changed = x
+                    letters_new[x] = "*" + letters_new[x] + "*"
+        if not is_valid_sequence:
+            break
+        new_list.append("".join(letters_new))
+    if is_valid_sequence:
+        return(new_list)
+    else:
+        return(sequence)

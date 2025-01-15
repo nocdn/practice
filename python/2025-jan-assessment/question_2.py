@@ -48,5 +48,3 @@ def find_restaurants(country, stars):
         return f"There are no {stars_string} star restaurants in {country}.\n"
    else:
         return formatted_restaurants
-   
-print(find_restaurants('Italy', 1))

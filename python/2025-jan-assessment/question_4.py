@@ -121,20 +121,17 @@ class GameBoard:
         bx, by = board_tile.coordinates
         new_rot = new_tile.rotated_features()
         board_rot = board_tile.rotated_features()
-        
-        # Check east-west connections
+    
+        # Check all adjacent connections
         if bx == nx + 1 and by == ny:  # board tile is to the right
             return new_rot[1] == board_rot[3]
         if bx == nx - 1 and by == ny:  # board tile is to the left
-            return new_rot[3] == board_rot[1]
-            
-        # Check north-south connections
+           return new_rot[3] == board_rot[1]
         if by == ny + 1 and bx == nx:  # board tile is above
             return new_rot[0] == board_rot[2]
         if by == ny - 1 and bx == nx:  # board tile is below
             return new_rot[2] == board_rot[0]
-            
-        return True  # No adjacent edge
+        return True
 
     def _restore_state(self, tile, old_coords, old_orientation):
         # Restore orientation first
@@ -147,10 +144,15 @@ class GameBoard:
             tile._coordinates = old_coords
 
     def _is_valid_placement(self, tile, coords, orientation):
-        original_coords = tile.coordinates
-        original_orientation = tile.orientation
-        tile.coordinates = coords
+        has_adjacent = False
+        original_coords = tile._coordinates[:]
+        original_orientation = tile._orientation
+    
+        # Set temporary state
+        tile._coordinates = coords
         tile._orientation = orientation
+    
+        # Check all adjacent tiles
         for board_tile in self._board:
             bx, by = board_tile.coordinates
             if [bx, by] in [
@@ -159,12 +161,18 @@ class GameBoard:
                 [coords[0], coords[1]+1],
                 [coords[0], coords[1]-1]
             ]:
+                has_adjacent = True
                 if not self._features_match(tile, board_tile):
-                    self._restore_state(tile, original_coords, original_orientation)
+                    # Restore original state
+                    tile._coordinates = original_coords
+                    tile._orientation = original_orientation
                     return False
+    
+        # Restore original state
+        tile._coordinates = original_coords
+        tile._orientation = original_orientation
+        return has_adjacent or len(self._board) == 0
 
-        self._restore_state(tile, original_coords, original_orientation)
-        return True
 
     def possible_moves(self, tile):
         moves_dict = {}  # Group orientations by coordinate
@@ -201,18 +209,9 @@ class GameBoard:
             raise ValueError("Coordinates not available.")
         if not self._is_valid_placement(tile, coords, orientation):
             raise ValueError("Invalid placement.")
-        
-        # Save original state in case of failure
-        original_coords = tile.coordinates
-        original_orientation = tile.orientation
-        
-        try:
-            tile.coordinates = coords
-            tile._orientation = orientation
-            self._board.append(tile)
-            self._update_spaces(tile)
-        except Exception as e:
-            # Restore original state if anything fails
-            self._restore_state(tile, original_coords, original_orientation)
-            raise e
-
+    
+        # Update tile state
+        tile._coordinates = coords
+        tile._orientation = orientation
+        self._board.append(tile)
+        self._update_spaces(tile)

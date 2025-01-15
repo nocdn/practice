@@ -117,33 +117,3 @@ def shopping_list(ing_file, recipe_file, orders):
     output += f"Total Cost: £{(total / 100):>4.2f}\n"
     
     return output
-
-# example usage
-try:
-    import_files('Ingredients.csv', 'Recipes.csv')
-    data = export_data()
-    # print("ingredients:", data[0])
-    # print("recipes:", data[1])
-
-    orders1 = ['chocolate', 48, 'blueberry', 12]
-    orders2 = ['oat', 16, 'chocolate', 11, 'lemon', 0]
-    orders3 = [48, 'chocolate', 'blueberry']
-    orders4 = ['chocolate', 6]
-
-    # print(total_ingredients(['chocolate', 6]))  # Output for valid orders
-    # print(total_ingredients(orders2))  # Raises ValueError
-    # print(total_ingredients(orders3))  # Raises TypeError
-    # ing = {'flour': 250, 'eggs': 2, 'sugar': 120, 'milk': 200, 'yogurt': 280, 'cocoa': 50}
-    # print(total_cost(ing))
-
-    ing_file = 'Ingredients.csv'
-    recipe_file = 'Recipes.csv'
-    orders = ['chocolate', 96]
-    print(shopping_list(ing_file, recipe_file, orders))
-
-except FileNotFoundError as e:
-    print(e)
-except ValueError as e:
-    print(e)
-except TypeError as e:
-    print(e)
